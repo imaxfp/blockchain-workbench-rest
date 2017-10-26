@@ -1,0 +1,244 @@
+    /* "Fibonacci.sol":25:468  contract Fibonacci {... */
+  mstore(0x40, 0x60)
+  jumpi(tag_1, iszero(callvalue))
+  0x0
+  dup1
+  revert
+tag_1:
+  dataSize(sub_0)
+  dup1
+  dataOffset(sub_0)
+  0x0
+  codecopy
+  0x0
+  return
+stop
+
+sub_0: assembly {
+        /* "Fibonacci.sol":25:468  contract Fibonacci {... */
+      mstore(0x40, 0x60)
+      calldataload(0x0)
+      0x100000000000000000000000000000000000000000000000000000000
+      swap1
+      div
+      0xffffffff
+      and
+      dup1
+      0x3c7fdc70
+      eq
+      tag_2
+      jumpi
+      dup1
+      0x61047ff4
+      eq
+      tag_3
+      jumpi
+      0x0
+      dup1
+      revert
+        /* "Fibonacci.sol":332:466  function fibonacciNotify(uint number) returns(uint result) {... */
+    tag_2:
+      jumpi(tag_4, iszero(callvalue))
+      0x0
+      dup1
+      revert
+    tag_4:
+      tag_5
+      0x4
+      dup1
+      dup1
+      calldataload
+      swap1
+      0x20
+      add
+      swap1
+      swap2
+      swap1
+      pop
+      pop
+      jump(tag_6)
+    tag_5:
+      mload(0x40)
+      dup1
+      dup3
+      dup2
+      mstore
+      0x20
+      add
+      swap2
+      pop
+      pop
+      mload(0x40)
+      dup1
+      swap2
+      sub
+      swap1
+      return
+        /* "Fibonacci.sol":95:326  function fibonacci(uint number) constant returns(uint result) {... */
+    tag_3:
+      jumpi(tag_7, iszero(callvalue))
+      0x0
+      dup1
+      revert
+    tag_7:
+      tag_8
+      0x4
+      dup1
+      dup1
+      calldataload
+      swap1
+      0x20
+      add
+      swap1
+      swap2
+      swap1
+      pop
+      pop
+      jump(tag_9)
+    tag_8:
+      mload(0x40)
+      dup1
+      dup3
+      dup2
+      mstore
+      0x20
+      add
+      swap2
+      pop
+      pop
+      mload(0x40)
+      dup1
+      swap2
+      sub
+      swap1
+      return
+        /* "Fibonacci.sol":332:466  function fibonacciNotify(uint number) returns(uint result) {... */
+    tag_6:
+        /* "Fibonacci.sol":378:389  uint result */
+      0x0
+        /* "Fibonacci.sol":410:427  fibonacci(number) */
+      tag_11
+        /* "Fibonacci.sol":420:426  number */
+      dup3
+        /* "Fibonacci.sol":410:419  fibonacci */
+      tag_9
+        /* "Fibonacci.sol":410:427  fibonacci(number) */
+      jump	// in
+    tag_11:
+        /* "Fibonacci.sol":401:427  result = fibonacci(number) */
+      swap1
+      pop
+        /* "Fibonacci.sol":437:459  Notify(number, result) */
+      0x71e71a8458267085d5ab16980fd5f114d2d37f232479c245d523ce8d23ca40ed
+        /* "Fibonacci.sol":444:450  number */
+      dup3
+        /* "Fibonacci.sol":452:458  result */
+      dup3
+        /* "Fibonacci.sol":437:459  Notify(number, result) */
+      mload(0x40)
+      dup1
+      dup4
+      dup2
+      mstore
+      0x20
+      add
+      dup3
+      dup2
+      mstore
+      0x20
+      add
+      swap3
+      pop
+      pop
+      pop
+      mload(0x40)
+      dup1
+      swap2
+      sub
+      swap1
+      log1
+        /* "Fibonacci.sol":332:466  function fibonacciNotify(uint number) returns(uint result) {... */
+      swap2
+      swap1
+      pop
+      jump	// out
+        /* "Fibonacci.sol":95:326  function fibonacci(uint number) constant returns(uint result) {... */
+    tag_9:
+        /* "Fibonacci.sol":144:155  uint result */
+      0x0
+        /* "Fibonacci.sol":181:182  0 */
+      dup1
+        /* "Fibonacci.sol":171:177  number */
+      dup3
+        /* "Fibonacci.sol":171:182  number == 0 */
+      eq
+        /* "Fibonacci.sol":167:319  if (number == 0) return 0;... */
+      iszero
+      tag_13
+      jumpi
+        /* "Fibonacci.sol":191:192  0 */
+      0x0
+        /* "Fibonacci.sol":184:192  return 0 */
+      swap1
+      pop
+      jump(tag_12)
+        /* "Fibonacci.sol":167:319  if (number == 0) return 0;... */
+    tag_13:
+        /* "Fibonacci.sol":221:222  1 */
+      0x1
+        /* "Fibonacci.sol":211:217  number */
+      dup3
+        /* "Fibonacci.sol":211:222  number == 1 */
+      eq
+        /* "Fibonacci.sol":207:319  if (number == 1) return 1;... */
+      iszero
+      tag_15
+      jumpi
+        /* "Fibonacci.sol":231:232  1 */
+      0x1
+        /* "Fibonacci.sol":224:232  return 1 */
+      swap1
+      pop
+      jump(tag_12)
+        /* "Fibonacci.sol":207:319  if (number == 1) return 1;... */
+    tag_15:
+        /* "Fibonacci.sol":288:319  Fibonacci.fibonacci(number - 2) */
+      tag_17
+        /* "Fibonacci.sol":317:318  2 */
+      0x2
+        /* "Fibonacci.sol":308:314  number */
+      dup4
+        /* "Fibonacci.sol":308:318  number - 2 */
+      sub
+        /* "Fibonacci.sol":288:307  Fibonacci.fibonacci */
+      tag_9
+        /* "Fibonacci.sol":288:319  Fibonacci.fibonacci(number - 2) */
+      jump	// in
+    tag_17:
+        /* "Fibonacci.sol":254:285  Fibonacci.fibonacci(number - 1) */
+      tag_18
+        /* "Fibonacci.sol":283:284  1 */
+      0x1
+        /* "Fibonacci.sol":274:280  number */
+      dup5
+        /* "Fibonacci.sol":274:284  number - 1 */
+      sub
+        /* "Fibonacci.sol":254:273  Fibonacci.fibonacci */
+      tag_9
+        /* "Fibonacci.sol":254:285  Fibonacci.fibonacci(number - 1) */
+      jump	// in
+    tag_18:
+        /* "Fibonacci.sol":254:319  Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2) */
+      add
+        /* "Fibonacci.sol":247:319  return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2) */
+      swap1
+      pop
+        /* "Fibonacci.sol":95:326  function fibonacci(uint number) constant returns(uint result) {... */
+    tag_12:
+      swap2
+      swap1
+      pop
+      jump	// out
+
+    auxdata: 0xa165627a7a72305820d4181e41f49ce9e32990794ebc518ae075c2fd775c5671a7e1078a096309eadd0029
+}

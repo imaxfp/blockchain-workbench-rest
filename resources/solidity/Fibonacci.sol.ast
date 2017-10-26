@@ -1,0 +1,158 @@
+PragmaDirective
+   Source: "pragma solidity ^0.4.2;"
+ContractDefinition "Fibonacci"
+   Source: "contract Fibonacci {\n\n    event Notify(uint input, uint result);\n\n    function fibonacci(uint number) constant returns(uint result) {\n        if (number == 0) return 0;\n        else if (number == 1) return 1;\n        else return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2);\n    }\n\n    function fibonacciNotify(uint number) returns(uint result) {\n        result = fibonacci(number);\n        Notify(number, result);\n    }\n}"
+  EventDefinition "Notify"
+     Source: "event Notify(uint input, uint result);"
+    ParameterList
+       Source: "(uint input, uint result)"
+      VariableDeclaration "input"
+         Type: uint256
+         Source: "uint input"
+        ElementaryTypeName uint
+           Source: "uint"
+      VariableDeclaration "result"
+         Type: uint256
+         Source: "uint result"
+        ElementaryTypeName uint
+           Source: "uint"
+  FunctionDefinition "fibonacci" - public - const
+     Source: "function fibonacci(uint number) constant returns(uint result) {\n        if (number == 0) return 0;\n        else if (number == 1) return 1;\n        else return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2);\n    }"
+    ParameterList
+       Source: "(uint number)"
+      VariableDeclaration "number"
+         Type: uint256
+         Source: "uint number"
+        ElementaryTypeName uint
+           Source: "uint"
+    ParameterList
+       Source: "(uint result)"
+      VariableDeclaration "result"
+         Type: uint256
+         Source: "uint result"
+        ElementaryTypeName uint
+           Source: "uint"
+    Block
+       Source: "{\n        if (number == 0) return 0;\n        else if (number == 1) return 1;\n        else return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2);\n    }"
+      IfStatement
+         Source: "if (number == 0) return 0;\n        else if (number == 1) return 1;\n        else return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2)"
+        BinaryOperation using operator ==
+           Type: bool
+           Source: "number == 0"
+          Identifier number
+             Type: uint256
+             Source: "number"
+          Literal, token: [no token] value: 0
+             Type: int_const 0
+             Source: "0"
+        Return
+           Source: "return 0"
+          Literal, token: [no token] value: 0
+             Type: int_const 0
+             Source: "0"
+        IfStatement
+           Source: "if (number == 1) return 1;\n        else return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2)"
+          BinaryOperation using operator ==
+             Type: bool
+             Source: "number == 1"
+            Identifier number
+               Type: uint256
+               Source: "number"
+            Literal, token: [no token] value: 1
+               Type: int_const 1
+               Source: "1"
+          Return
+             Source: "return 1"
+            Literal, token: [no token] value: 1
+               Type: int_const 1
+               Source: "1"
+          Return
+             Source: "return Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2)"
+            BinaryOperation using operator +
+               Type: uint256
+               Source: "Fibonacci.fibonacci(number - 1) + Fibonacci.fibonacci(number - 2)"
+              FunctionCall
+                 Type: uint256
+                 Source: "Fibonacci.fibonacci(number - 1)"
+                MemberAccess to member fibonacci
+                   Type: function (uint256) view returns (uint256)
+                   Source: "Fibonacci.fibonacci"
+                  Identifier Fibonacci
+                     Type: type(contract Fibonacci)
+                     Source: "Fibonacci"
+                BinaryOperation using operator -
+                   Type: uint256
+                   Source: "number - 1"
+                  Identifier number
+                     Type: uint256
+                     Source: "number"
+                  Literal, token: [no token] value: 1
+                     Type: int_const 1
+                     Source: "1"
+              FunctionCall
+                 Type: uint256
+                 Source: "Fibonacci.fibonacci(number - 2)"
+                MemberAccess to member fibonacci
+                   Type: function (uint256) view returns (uint256)
+                   Source: "Fibonacci.fibonacci"
+                  Identifier Fibonacci
+                     Type: type(contract Fibonacci)
+                     Source: "Fibonacci"
+                BinaryOperation using operator -
+                   Type: uint256
+                   Source: "number - 2"
+                  Identifier number
+                     Type: uint256
+                     Source: "number"
+                  Literal, token: [no token] value: 2
+                     Type: int_const 2
+                     Source: "2"
+  FunctionDefinition "fibonacciNotify" - public
+     Source: "function fibonacciNotify(uint number) returns(uint result) {\n        result = fibonacci(number);\n        Notify(number, result);\n    }"
+    ParameterList
+       Source: "(uint number)"
+      VariableDeclaration "number"
+         Type: uint256
+         Source: "uint number"
+        ElementaryTypeName uint
+           Source: "uint"
+    ParameterList
+       Source: "(uint result)"
+      VariableDeclaration "result"
+         Type: uint256
+         Source: "uint result"
+        ElementaryTypeName uint
+           Source: "uint"
+    Block
+       Source: "{\n        result = fibonacci(number);\n        Notify(number, result);\n    }"
+      ExpressionStatement
+         Source: "result = fibonacci(number)"
+        Assignment using operator =
+           Type: uint256
+           Source: "result = fibonacci(number)"
+          Identifier result
+             Type: uint256
+             Source: "result"
+          FunctionCall
+             Type: uint256
+             Source: "fibonacci(number)"
+            Identifier fibonacci
+               Type: function (uint256) view returns (uint256)
+               Source: "fibonacci"
+            Identifier number
+               Type: uint256
+               Source: "number"
+      ExpressionStatement
+         Source: "Notify(number, result)"
+        FunctionCall
+           Type: tuple()
+           Source: "Notify(number, result)"
+          Identifier Notify
+             Type: function (uint256,uint256)
+             Source: "Notify"
+          Identifier number
+             Type: uint256
+             Source: "number"
+          Identifier result
+             Type: uint256
+             Source: "result"
