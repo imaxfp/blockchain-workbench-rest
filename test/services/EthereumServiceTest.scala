@@ -2,7 +2,7 @@ package services
 
 import java.math.BigInteger
 import java.util.Collections
-
+import controllers.MultiChargeModel
 import junit.framework.TestCase.assertFalse
 import org.scalatest.FunSuite
 import org.scalatest.concurrent.ScalaFutures
@@ -30,11 +30,9 @@ class EthereumServiceIT extends FunSuite with ScalaFutures {
   val walletPwd = "testpass"
   val credentials = WalletUtils.loadCredentials(walletPwd, walletPath)
 
-  /**
-    * Ethereum Remote procedure calls
-    */
-  val web3j = Web3j.build(new HttpService("http://127.0.0.1:40403/"))
-  val ethApiService = new EthereumService(web3j)
+  val ethApiService = new EthereumService()
+  val nodeURL = "http://127.0.0.1:40403/"
+  val web3j = Web3j.build(new HttpService(nodeURL))
 
   /**
     * Smart contracts in binary mode. solc -o outputDirectory --bin --ast --asm sourceFile.sol
@@ -42,18 +40,26 @@ class EthereumServiceIT extends FunSuite with ScalaFutures {
   val contractFibonacciBin = ethApiService.getContractBin("./resources/solidity/Fibonacci.bin")
 
   test("Get balances") {
-    println(localAddress + " = " + ethApiService.getBalance(localAddress))
-    println(remoteAddress + " = " + ethApiService.getBalance(remoteAddress))
+    println(localAddress + " = " + ethApiService.getBalance(localAddress, nodeURL))
+    println(remoteAddress + " = " + ethApiService.getBalance(remoteAddress, nodeURL))
   }
 
-  test("Charge address with Ethereum wallet file 'recommended'") {
-    println("Before charge = " + ethApiService.getBalance(remoteAddress))
-    ethApiService.sendEther(walletPwd, walletPath, remoteAddress, java.math.BigDecimal.valueOf(777))
-    println("After charge =" + ethApiService.getBalance(remoteAddress))
+  test("Single charge address with Ethereum wallet file 'recommended'") {
+    println("Before charge = " + ethApiService.getBalance(remoteAddress, nodeURL))
+    ethApiService.sendEther(walletPwd, walletPath, remoteAddress, java.math.BigDecimal.valueOf(777), nodeURL)
+    println("After charge =" + ethApiService.getBalance(remoteAddress, nodeURL))
+  }
+
+  test("Multi charge address with Ethereum wallet file 'recommended'") {
+    println("Before charge = " + ethApiService.getBalance(remoteAddress, nodeURL))
+    val multiCharge = MultiChargeModel(remoteAddress, 1, walletPath, walletPwd, 2, 150, List("http://127.0.0.1:40403/"))
+    ethApiService.sendMultiChargeWithDelay(multiCharge)
+    //Thread.sleep(multiCharge.countCharge * multiCharge.timeoutMs + 1)
+    Thread.sleep(10000)
   }
 
   test("Deploy smart contract and get transaction hash") {
-    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath))
+    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath), nodeURL)
     assertFalse(tx.getTransactionHash.isEmpty)
     println("Transaction hash = " + tx.getTransactionHash)
   }
@@ -63,9 +69,9 @@ class EthereumServiceIT extends FunSuite with ScalaFutures {
     * Can take different time, according to blockchain network performance
     */
   test("Deploy smart contract and get contract address by transaction hash after confirmations") {
-    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath))
+    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath), nodeURL)
     assertFalse(tx.getTransactionHash.isEmpty)
-    whenReady(ethApiService.getTxReceipt(tx.getTransactionHash, 100)) { addr =>
+    whenReady(ethApiService.getTxReceipt(tx.getTransactionHash, 100, web3j)) { addr =>
       assertFalse(addr.isEmpty)
       println("contract address = " + addr.get.getContractAddress)
     }
@@ -73,14 +79,23 @@ class EthereumServiceIT extends FunSuite with ScalaFutures {
 
 
   test("Deploy smart contract and execute smart contract method") {
-    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath))
+    val tx = ethApiService.deploySmartContract(contractFibonacciBin, localAddress, ethApiService.getCredential(walletPwd, walletPath), nodeURL)
     assertFalse(tx.getTransactionHash.isEmpty)
-    whenReady(ethApiService.getTxReceipt(tx.getTransactionHash, 100)) { addr =>
+    whenReady(ethApiService.getTxReceipt(tx.getTransactionHash, 100, web3j)) { addr =>
       assertFalse(addr.isEmpty)
-      whenReady(ethApiService.callSmartContractFunction(fibonacciFunction, localAddress, addr.get.getContractAddress)) { res =>
+      whenReady(ethApiService.callSmartContractFunction(fibonacciFunction, localAddress, addr.get.getContractAddress, nodeURL)) { res =>
         val resultList = FunctionReturnDecoder.decode(res.getValue, fibonacciFunction.getOutputParameters)
         resultList.toList.foreach(r => println(r.getValue))
       }
+    }
+  }
+
+  private def doubledFunction = new Function("doubleNumber", Collections.singletonList(new Uint(BigInteger.valueOf(2))), Collections.singletonList(new TypeReference[Uint]() {}))
+
+  test("Run contract method after contract installation") {
+    whenReady(ethApiService.callSmartContractFunction(doubledFunction, localAddress, "0x16a2d105e89bfc1c4fa672993cab876acd858092", nodeURL)) { res =>
+      val resultList = FunctionReturnDecoder.decode(res.getValue, fibonacciFunction.getOutputParameters)
+      resultList.toList.foreach(r => println(r.getValue))
     }
   }
 

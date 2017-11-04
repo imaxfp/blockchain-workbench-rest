@@ -34,21 +34,39 @@ In case with production network you should run and connect to the node node loca
 #### Check balances
 http://localhost:9000/v1/eth/balance
 
-
-request:
 ```json
 {   
-	"addr":["0xb501199150824804ba902e57d2eb92170150735c","0xcd7ab062ce3ff7bc8d91397df731f3b74bcbed01"]
+	"addr":["0xb501199150824804ba902e57d2eb92170150735c","0xcd7ab062ce3ff7bc8d91397df731f3b74bcbed01"],
+	"rpcNodes":["http://127.0.0.1:40403/"]
 }
 ```
 
 #### Charge account
+http://localhost:9000/v1/eth/charge
+
 ```json
 {   
-	"walletPath":"/path/localNode/keystore/UTC--2017-10-18T06-43-08.682098976Z--b501199150824804ba902e57d2eb92170150735c",
-	"pwd":"yourpass",
+	"walletPath":"/path/keystore/UTC--2017-10-18T06-43-08.682098976Z--b501199150824804ba902e57d2eb92170150735c",
+	"pwd":"testpass",
 	"addr":"0xcd7ab062ce3ff7bc8d91397df731f3b74bcbed01",
-	"amount":10
+	"amount":100,
+	"rpcNodes":["http://127.0.0.1:40403/"]
+}
+
+```
+
+#### Multi charge account 
+http://localhost:9000/v1/eth/multicharge
+
+```json
+{   
+	"addr":"0xcd7ab062ce3ff7bc8d91397df731f3b74bcbed01",
+	"amount":1,
+	"walletPath":"/path/keystore/UTC--2017-10-18T06-43-08.682098976Z--b501199150824804ba902e57d2eb92170150735c",
+	"pwd":"testpass",
+	"countCharge":2,
+	"timeoutMs":150,
+	"rpcNodes":["http://127.0.0.1:40403/","http://127.0.0.1:40403/"]
 }
 ```
 
@@ -57,10 +75,11 @@ http://localhost:9000/v1/eth/deploy
 
 ```json
 {   
-	"walletPath":"/path/localNode/keystore/UTC--2017-10-18T06-43-08.682098976Z--b501199150824804ba902e57d2eb92170150735c",
-    "pwd":"yourpass",
-    "addr":"0xb501199150824804ba902e57d2eb92170150735c",
-	"contractBin":"6060604..."
+	"walletPath":"/path/keystore/UTC--2017-10-18T06-43-08.682098976Z--b501199150824804ba902e57d2eb92170150735c",
+	"pwd":"testpass",
+	"addr":"0xb501199150824804ba902e57d2eb92170150735c",
+	"rpcNodes":["http://127.0.0.1:40403/"],
+	"contractBin":"60606..."
 }
 ```
 
@@ -69,13 +88,23 @@ http://localhost:9000/v1/eth/contract/info
 
 ```json
 {   
-	"hashes":["0x9f53279a33e2e5afa51eb91bf5598af5246fffd1997d917bf6b556627ed473a8", "..."]
+	"hashes":"0x711d7d005adecc88571551c7b38df90d3f3d6c4298ad494e148b821eda92ad5d",
+	"rpcNodes":"http://127.0.0.1:40403/"
 }
 ```
 
 #### Execute method on the deployed smart contract 
+http://localhost:9000/v1/eth/contract/run
 
-
+```json
+{   
+	"from":"0xb501199150824804ba902e57d2eb92170150735c",
+	"contractAddr":"0x88071a3172731762806c10a6a5bae1a364493195",
+	"functionName":"doubleNumber",
+	"functionParams":7,
+	"rpcNodes":["http://127.0.0.1:40403/"]
+}
+```
 
 
 
