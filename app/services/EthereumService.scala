@@ -2,6 +2,7 @@ package services
 
 import java.io.IOException
 import java.math.BigInteger
+import java.util.concurrent.{ScheduledThreadPoolExecutor, TimeUnit}
 import java.util.{Collections, Optional}
 
 import controllers.MultiChargeModel
@@ -39,14 +40,39 @@ class EthereumService() {
 
   def sendEther(pwd: String, walletPath: String, destinationAddr: String, amount: java.math.BigDecimal, nodeUrl: String): TransactionReceipt = Transfer.sendFunds(getConnector(nodeUrl), WalletUtils.loadCredentials(pwd, walletPath), destinationAddr, amount, Convert.Unit.ETHER)
 
+  /**
+    * Run multi-charging process into thread pool executor, through send async.
+    *
+    * @param mCharge
+    */
   def sendMultiChargeWithDelay(mCharge: MultiChargeModel): Unit = {
+    val web3jProviders = mCharge.rpcNodes.map(url => getConnector(url))
+    val ex = new ScheduledThreadPoolExecutor(web3jProviders.size + 1)
+    val tasks = web3jProviders.map(node => {
+      new Runnable {
+        def run() {
+          Transfer.sendFundsAsync(node, WalletUtils.loadCredentials(mCharge.pwd, mCharge.walletPath), mCharge.addr, mCharge.amount.bigDecimal, Convert.Unit.WEI)
+        }
+      }
+    })
+    for (i <- tasks.indices) {
+      new FixedExecutionRunnable(tasks(i), mCharge.countCharge).runNTimes(ex, mCharge.timeoutMs, TimeUnit.MILLISECONDS)
+    }
+  }
+
+  /**
+    * Run multi-charging process into separated thread for the each of the nodes.
+    *
+    * @param mCharge
+    */
+  def sendMultiChargeWithDelaySeparatedThread(mCharge: MultiChargeModel): Unit = {
     val amount = mCharge.amount
     mCharge.rpcNodes.foreach(url => {
       val web3jLocal = getConnector(url)
       for (i <- 1 to mCharge.countCharge) {
         new Thread(new Runnable {
           def run() {
-            Transfer.sendFunds(web3jLocal, WalletUtils.loadCredentials(mCharge.pwd, mCharge.walletPath), mCharge.addr, amount.bigDecimal, Convert.Unit.ETHER)
+            Transfer.sendFunds(web3jLocal, WalletUtils.loadCredentials(mCharge.pwd, mCharge.walletPath), mCharge.addr, amount.bigDecimal, Convert.Unit.WEI)
           }
         }).start()
         Thread.sleep(mCharge.timeoutMs)
@@ -88,7 +114,8 @@ class EthereumService() {
 
   def runDouble(funName: String, from: String, contractAddress: String, parameter: String, nodeUrl: String): String = {
     val param = java.lang.Long.parseLong(parameter, 10)
-    val doubledFunction = new Function(funName, Collections.singletonList(new Uint(BigInteger.valueOf(param))), Collections.singletonList(new TypeReference[Uint]() {}))
+    val doubledFunction = new Function(funName, Collections.singletonList(new Uint(BigInteger.valueOf(param))), Collections.singletonList(new TypeReference[Uint]() {
+    }))
     val encodedFunction = FunctionEncoder.encode(doubledFunction)
     val tx = Transaction.createEthCallTransaction(from, contractAddress, encodedFunction)
     val res = getConnector(nodeUrl).ethCall(tx, DefaultBlockParameterName.LATEST).sendAsync().get()

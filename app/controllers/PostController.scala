@@ -1,7 +1,6 @@
 package controllers
 
 import javax.inject.Inject
-
 import com.google.gson.Gson
 import conf.PostControllerComponents
 import org.web3j.protocol.core.methods.response.TransactionReceipt
@@ -12,10 +11,10 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 import services.EthereumService
-
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.existentials
+import play.api.data.Forms._
 
 /**
   * @author Maxim Z.
@@ -38,16 +37,14 @@ case class ExecuteContractMethodModel(from: String, contractAddress: String, fun
 object CustomJsonMapper {
 
   /**
-    * JSON fields
+    * Custom fields for JSON mapping.
     */
   val addr = "addr"
   val hash = "hashes"
   val amount = "amount"
   val walletPath = "walletPath"
   val pwd = "pwd"
-
   val contractBin = "contractBin"
-
   val from = "from"
   val contractAddr = "contractAddr"
   val functionName = "functionName"
@@ -56,11 +53,15 @@ object CustomJsonMapper {
   val timeoutMs = "timeoutMs"
   val rpcNodes = "rpcNodes"
 
+  val txHash = "txHash"
+  val fullHash = "fullHash"
+  val result = "result"
 
-  val gson = new Gson()
+  val GSON = new Gson()
 
-  import play.api.data.Forms._
-
+  /**
+    * JSON mapping
+    */
   val balanceMapping: Form[Balances] = {
     Form(mapping(
       addr -> list(nonEmptyText),
@@ -134,23 +135,25 @@ class PostController @Inject()(cc: PostControllerComponents)(implicit ec: Execut
 
   def ethBalance(in: Balances): Future[Result] = {
     val rpcNodeUrl = in.rpcNodes.head
-    response(Map("balances" -> in.addr.map(a => BalanceModel(a, ethApiService.getBalance(a, rpcNodeUrl))).asJava))
+    response(Map(result -> in.addr.map(a => BalanceModel(a, ethApiService.getBalance(a, rpcNodeUrl))).asJava))
   }
 
-  def ethCharge(in: ChargeModel): Future[Result] = response(Map("txHash" -> ethApiService.sendEther(in.pwd, in.walletPath, in.toAddr, in.amount.bigDecimal, in.rpcNodes.head).getTransactionHash))
+  def ethCharge(in: ChargeModel): Future[Result] = response(Map(txHash -> ethApiService.sendEther(in.pwd, in.walletPath, in.toAddr, in.amount.bigDecimal, in.rpcNodes.head).getTransactionHash))
 
-  def ethMultiCharge(in: MultiChargeModel): Future[Result] = response(Map("txHash" -> ethApiService.sendMultiChargeWithDelay(in)))
+  def ethMultiCharge(in: MultiChargeModel): Future[Result] = response(Map(txHash -> ethApiService.sendMultiChargeWithDelay(in)))
 
-  def ethContractDeploy(in: SmartContractModel): Future[Result] = response(Map("fullHash" -> ethApiService.deploySmartContract(in.contractBin, in.addr, ethApiService.getCredential(in.pwd, in.walletPath), in.rpcNodes.head).getResult))
+  def ethMultiChargeThreads(in: MultiChargeModel): Future[Result] = response(Map(txHash -> ethApiService.sendMultiChargeWithDelaySeparatedThread(in)))
+
+  def ethContractDeploy(in: SmartContractModel): Future[Result] = response(Map(fullHash -> ethApiService.deploySmartContract(in.contractBin, in.addr, ethApiService.getCredential(in.pwd, in.walletPath), in.rpcNodes.head).getResult))
 
   def ethContractInfo(in: ContractInfo): Future[Result] = {
     response(Map(in -> ethApiService.getTxReceipt(in.hash, ethApiService.getConnector(in.rpcNode)).orElse(new TransactionReceipt()).getContractAddress))
   }
 
-  def ethContractRunDouble(in: ExecuteContractMethodModel): Future[Result] = response(Map("result" -> ethApiService.runDouble(in.functionName, in.from, in.contractAddress, in.parameter, in.rpcNodes.head)))
+  def ethContractRunDouble(in: ExecuteContractMethodModel): Future[Result] = response(Map(result -> ethApiService.runDouble(in.functionName, in.from, in.contractAddress, in.parameter, in.rpcNodes.head)))
 
 
-  def response[T](o: T): Future[Result] = Future(Created(gson.toJson(o)))
+  def response[T](o: T): Future[Result] = Future(Created(GSON.toJson(o)))
 
 
   override def routes: Routes = {
@@ -160,6 +163,7 @@ class PostController @Inject()(cc: PostControllerComponents)(implicit ec: Execut
     case POST(p"/eth/contract/info") => process(hashesMapping, ethContractInfo)
     case POST(p"/eth/contract/run") => process(executeContractMapping, ethContractRunDouble)
     case POST(p"/eth/multicharge") => process(multiChargeMapping, ethMultiCharge)
+    case POST(p"/eth/multicharge/threads") => process(multiChargeMapping, ethMultiChargeThreads)
   }
 
   def process[T](form: Form[T], success: T => Future[Result]): Action[AnyContent] = controllerComponents.PostAction.async { implicit request =>

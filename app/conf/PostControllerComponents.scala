@@ -1,7 +1,6 @@
 package conf
 
 import javax.inject.Inject
-
 import net.logstash.logback.marker.LogstashMarker
 import play.api.http.{FileMimeTypes, HttpVerbs}
 import play.api.i18n.{Langs, MessagesApi}
